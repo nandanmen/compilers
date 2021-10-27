@@ -1,0 +1,34 @@
+---
+title: Animation Breakdown
+---
+
+import { BoxAnimation } from "./BoxAnimation";
+import { Figure } from "./Figure";
+
+Great work! There you have it — your first animation with Framer
+Motion. Before we move on, let's break down that animation. How did we
+go from the `animate` prop to the animation that you saw?
+
+Here's the code from before:
+
+```jsx
+import { motion } from "framer-motion";
+
+export function Box() {
+  return (
+    <motion.div
+      animate={{
+        x: 500,
+      }}
+    />
+  );
+}
+```
+
+The `animate` prop is used to define the end state of the animation — what properties the component should have once the animation ends. In our animation above, we're saying to animate the `Box` from its current position to `x: 500`.
+
+<Figure>
+  <BoxAnimation />
+</Figure>
+
+The `animate` prop is also _reactive_, meaning every time the value changes the component will animate to the new value. Try clicking on the button below to change the value of `animate` in the code:
