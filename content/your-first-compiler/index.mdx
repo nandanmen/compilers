@@ -1,0 +1,34 @@
+---
+title: Your First Compiler
+---
+
+If you’ve been coding in the web for a while, you’ve probably seen code that looks like this:
+
+```js
+var a = 10;
+var b = 20;
+
+console.log(a + b);
+```
+
+For a long time, the `var` keyword was the only way to declare variables in JavaScript. Then, back in 2015, ES6 introduced two new ways to declare variables — `const` and `let`, with the former intended for unchanging (or **const**ant) variables, and the latter for mutable, or changing, variables.
+
+As ES6 grew in popularity and became the norm, the use of `var` started to be discouraged in favour of the new and fresh `const` and `let` variables.
+
+It was a Monday morning and over the last few weeks, there’s been talks throughout the org to migrate your codebases to ES6. As part of this migration, you were put in charge of migrating your team’s various codebases.
+
+You start to do this manually until you had an aha! moment — “I know compilers!”, you think to yourself. “I’m going to save so much time!”. So you begin on your journey, writing your own compiler to convert `var` to `let`…
+
+## Babel to the Rescue
+
+To write our first compiler, we're going to take advantage of Babel to do a _lot_ of heavy lifting for us.
+
+> Don't worry — in future chapters, we'll learn how to _build our own Babel_. We'll figure out how Babel does the work that it does in due time.
+
+If you’ve never heard of Babel before, Babel is a JavaScript compiler with a plugin system. It takes in JavaScript code, converts it to a tree-like structure called an _abstract syntax tree_, processes the tree through a series of plugins, and outputs more JavaScript code.
+
+And there you have it! You run the compiler, and everything works — no `var` in sight. You pat yourself on your back for a job well done. You share your work with the team, only to hear…
+
+“Couldn’t you have used Cmd + F?”
+
+Oops.

@@ -1,5 +1,6 @@
 import React from "react";
 import type { NextPage, GetStaticPaths, GetStaticProps } from "next";
+import Head from "next/head";
 import { getMDXComponent } from "mdx-bundler/client";
 
 import { styled } from "@/stitches";
@@ -13,10 +14,15 @@ type CoursePageProps = {
 const CoursePage: NextPage<CoursePageProps> = ({ code, frontmatter }) => {
   const Component = React.useMemo(() => getMDXComponent(code), [code]);
   return (
-    <Article>
-      <Title>{frontmatter.title}</Title>
-      <Component components={{ pre: CodeBlock }} />
-    </Article>
+    <>
+      <Head>
+        <title>{frontmatter.title}</title>
+      </Head>
+      <Article>
+        <Title>{frontmatter.title}</Title>
+        <Component components={{ pre: CodeBlock }} />
+      </Article>
+    </>
   );
 };
 
@@ -49,7 +55,7 @@ const CodeBlock = styled("pre", {
 });
 
 const Title = styled("h1", {
-  fontSize: "$2xl",
+  fontSize: "3rem",
   color: "$mint10",
   fontFamily: "$serif",
 });
