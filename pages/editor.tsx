@@ -1,20 +1,22 @@
+import React from "react";
 import Editor, { Monaco } from "@monaco-editor/react";
 import { HiChevronDown } from "react-icons/hi";
 import { FaPlay } from "react-icons/fa";
 import { styled } from "@/stitches";
 
 import { CodeBlock } from "../components/CodeBlock";
+import { transform } from "../lib/useBabelPlugin";
 
 const code = `
 /**
  * A babel plugin to convert 'var' declarations to 'let'.
  */
-export default function () {
+export default () => {
   return {
     visitor: {
-      VariableDeclaration(node) {
-        if (node.kind === 'var') {
-          // node.kind = 'let'
+      VariableDeclaration(path) {
+        if (path.node.kind === 'var') {
+          // path.node.kind = 'let'
         }
       }
     }
@@ -30,6 +32,16 @@ function sum(a, b) {
 }`;
 
 export default function Page() {
+  const [output, setOutput] = React.useState("");
+  const editorRef = React.useRef<any>();
+
+  function exec() {
+    setOutput("");
+    const code = editorRef.current.getValue();
+    const out = transform(input, code);
+    setOutput(out);
+  }
+
   return (
     <Main>
       <Article as="article">
@@ -55,6 +67,7 @@ export default function Page() {
           defaultValue={code}
           theme="myCustomTheme"
           beforeMount={prepareMonaco}
+          onMount={(editor) => (editorRef.current = editor)}
           options={{
             fontFamily: "Input Mono",
             fontSize: "13px",
@@ -68,11 +81,11 @@ export default function Page() {
       </EditorWrapper>
       <CodeOutput>
         <CodeBlock>{input}</CodeBlock>
-        <CodeBlock>{input}</CodeBlock>
+        <CodeBlock>{output}</CodeBlock>
         <Arrow>
           <HiChevronDown size="2rem" />
         </Arrow>
-        <Play>
+        <Play onClick={exec}>
           <FaPlay size="1rem" />
         </Play>
       </CodeOutput>
@@ -106,6 +119,7 @@ const Play = styled(Control, {
   background: "$green8",
   top: "50%",
   transform: "translate(-50%, -50%)",
+  cursor: "pointer",
 });
 
 const Main = styled("main", {
