@@ -1,6 +1,9 @@
-import React from "react";
 import Editor, { Monaco } from "@monaco-editor/react";
+import { HiChevronDown } from "react-icons/hi";
+import { FaPlay } from "react-icons/fa";
 import { styled } from "@/stitches";
+
+import { CodeBlock } from "../components/CodeBlock";
 
 const code = `
 /**
@@ -18,6 +21,13 @@ export default function () {
   }
 }
 `;
+
+const input = `var a = 10
+
+function sum(a, b) {
+  var result = a + b
+  return result
+}`;
 
 export default function Page() {
   return (
@@ -38,13 +48,6 @@ export default function Page() {
           For now, uncomment the code on line 10, press the play button (or
           press enter), and watch the plugin work its magic!
         </p>
-        <h2>About the Playground</h2>
-        <p>
-          In the middle column you'll find the source code of the plugin itself
-          — it's only ten lines of code! On the top right you have the input
-          that's passed into the plugin, with the corresponding output shown on
-          the bottom right.
-        </p>
       </Article>
       <EditorWrapper>
         <Editor
@@ -63,14 +66,51 @@ export default function Page() {
           }}
         />
       </EditorWrapper>
-      <Column>Output</Column>
+      <CodeOutput>
+        <CodeBlock>{input}</CodeBlock>
+        <CodeBlock>{input}</CodeBlock>
+        <Arrow>
+          <HiChevronDown size="2rem" />
+        </Arrow>
+        <Play>
+          <FaPlay size="1rem" />
+        </Play>
+      </CodeOutput>
     </Main>
   );
 }
 
+const Control = styled("div", {
+  padding: "$2",
+  borderRadius: "12px",
+  border: "2px solid $mint4",
+  width: "$8",
+  aspectRatio: 1,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  background: "$mint2",
+  color: "inherit",
+});
+
+const Arrow = styled(Control, {
+  position: "absolute",
+  top: "50%",
+  left: "50%",
+  transform: "translate(-50%, -50%)",
+});
+
+const Play = styled(Control, {
+  position: "absolute",
+  border: "none",
+  background: "$green8",
+  top: "50%",
+  transform: "translate(-50%, -50%)",
+});
+
 const Main = styled("main", {
   display: "grid",
-  gridTemplateColumns: "repeat(3, 1fr)",
+  gridTemplateColumns: "65ch repeat(2, 1fr)",
   height: "calc(100vh - 10px)",
 });
 
@@ -81,14 +121,27 @@ const Title = styled("h1", {
 });
 
 const Column = styled("div", {
-  padding: "$16",
-
   "&:not(:last-child)": {
     borderRight: "2px solid $mint4",
   },
 });
 
+const CodeOutput = styled(Column, {
+  display: "grid",
+  gridTemplateRows: "repeat(2, 1fr)",
+  position: "relative",
+
+  "> *": {
+    padding: "$16",
+  },
+
+  "> :first-child": {
+    borderBottom: "2px solid $mint4",
+  },
+});
+
 const Article = styled(Column, {
+  padding: "$16",
   lineHeight: 1.7,
   color: "$mint12",
 

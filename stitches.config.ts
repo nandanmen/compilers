@@ -1,5 +1,5 @@
 import { createStitches } from "@stitches/react";
-import { mintDark } from "@radix-ui/colors";
+import { mintDark, greenDark } from "@radix-ui/colors";
 
 const SPACING = {
   px: "1px",
@@ -44,10 +44,11 @@ export const { styled, keyframes, css, globalCss, getCssText } = createStitches(
     theme: {
       colors: {
         ...mintDark,
+        ...greenDark,
       },
       fonts: {
         sans: "Nunito, -apple-system, sans-serif",
-        mono: "Space Mono, monospace",
+        mono: "Input Mono, monospace",
         serif: "Recoleta, ui-serif, serif",
       },
       fontSizes: {

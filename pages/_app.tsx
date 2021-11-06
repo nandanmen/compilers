@@ -21,7 +21,6 @@ const globalStyles = globalCss({
   code: {
     fontFamily: "$mono",
     padding: "$1",
-    background: "$mint4",
   },
 });
 
