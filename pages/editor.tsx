@@ -2,8 +2,8 @@ import React from "react";
 import Editor, { Monaco } from "@monaco-editor/react";
 import { HiChevronDown } from "react-icons/hi";
 import { FaPlay } from "react-icons/fa";
-import { styled } from "@/stitches";
 
+import { styled } from "@/stitches";
 import { CodeBlock } from "../components/CodeBlock";
 import { transform } from "../lib/useBabelPlugin";
 
@@ -24,20 +24,34 @@ export default () => {
 }
 `;
 
-const input = `var a = 10
+const input = `
+var a = 10
 
 function sum(a, b) {
   var result = a + b
   return result
-}`;
+}
+`;
 
 export default function Page() {
   const [output, setOutput] = React.useState("");
   const editorRef = React.useRef<any>();
+  const inputEditorRef = React.useRef<any>();
+
+  function handleMount(editor: any, monaco: Monaco) {
+    editorRef.current = editor;
+    editor.onKeyDown(({ code, metaKey }) => {
+      if (metaKey && code === "Enter") {
+        exec();
+      }
+    });
+  }
 
   function exec() {
     setOutput("");
+    console.log(editorRef.current);
     const code = editorRef.current.getValue();
+    const input = inputEditorRef.current.getValue();
     const out = transform(input, code);
     setOutput(out);
   }
@@ -61,13 +75,13 @@ export default function Page() {
           press enter), and watch the plugin work its magic!
         </p>
       </Article>
-      <EditorWrapper>
+      <Column>
         <Editor
           defaultLanguage="javascript"
           defaultValue={code}
           theme="myCustomTheme"
           beforeMount={prepareMonaco}
-          onMount={(editor) => (editorRef.current = editor)}
+          onMount={handleMount}
           options={{
             fontFamily: "Input Mono",
             fontSize: "13px",
@@ -78,10 +92,26 @@ export default function Page() {
             scrollBeyondLastLine: false,
           }}
         />
-      </EditorWrapper>
+      </Column>
       <CodeOutput>
-        <CodeBlock>{input}</CodeBlock>
-        <CodeBlock>{output}</CodeBlock>
+        <Editor
+          defaultLanguage="javascript"
+          defaultValue={input}
+          height="50vh"
+          theme="myCustomTheme"
+          beforeMount={prepareMonaco}
+          onMount={(editor) => (inputEditorRef.current = editor)}
+          options={{
+            fontFamily: "Input Mono",
+            fontSize: "13px",
+            minimap: {
+              enabled: false,
+            },
+            tabWidth: 2,
+            scrollBeyondLastLine: false,
+          }}
+        />
+        <OutputCode>{output}</OutputCode>
         <Arrow>
           <HiChevronDown size="2rem" />
         </Arrow>
@@ -92,6 +122,10 @@ export default function Page() {
     </Main>
   );
 }
+
+const OutputCode = styled(CodeBlock, {
+  padding: "$16",
+});
 
 const Control = styled("div", {
   padding: "$2",
@@ -145,10 +179,6 @@ const CodeOutput = styled(Column, {
   gridTemplateRows: "repeat(2, 1fr)",
   position: "relative",
 
-  "> *": {
-    padding: "$16",
-  },
-
   "> :first-child": {
     borderBottom: "2px solid $mint4",
   },
@@ -170,10 +200,6 @@ const Article = styled(Column, {
   "> h2": {
     marginTop: "$16",
   },
-});
-
-const EditorWrapper = styled(Column, {
-  padding: "$4 0",
 });
 
 function prepareMonaco(monaco: Monaco) {

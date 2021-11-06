@@ -3,15 +3,17 @@ import SyntaxHighlighter from "react-syntax-highlighter";
 
 type CodeBlockProps = {
   language?: string;
+  className?: string;
   children: React.ReactNode;
 };
 
 export function CodeBlock({
   language = "javascript",
+  className = "",
   children,
 }: CodeBlockProps) {
   return (
-    <SyntaxHighlighter language={language} style={style}>
+    <SyntaxHighlighter className={className} language={language} style={style}>
       {children}
     </SyntaxHighlighter>
   );
