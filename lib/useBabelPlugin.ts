@@ -36,7 +36,6 @@ export function usePluginString(code: string, plugin: string) {
 }
 
 export function transform(code: string, plugin: string) {
-  console.log("transforming", code, plugin);
   const pluginObj = Babel.transform(plugin, {
     plugins: [exportDefaultToReturn],
   });

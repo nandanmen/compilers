@@ -22,3 +22,6 @@
     - Using the current cursor position, get the first match _before_ the current position
   - Get rid of the last two curly brackets — how do you match for code between the `visitor: {` part?
     - I cant figure out how to limit the cursor to the stuff between the `visitor: {` — looking to fix that later
+- Highlight parts of the input editor when there is an active node
+  - Got basic highlighting working
+  - How to remove old decorations?

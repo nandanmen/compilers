@@ -3,6 +3,7 @@ import Editor, { Monaco } from "@monaco-editor/react";
 import { HiChevronDown } from "react-icons/hi";
 import { FaPlay } from "react-icons/fa";
 import { parse } from "@babel/parser";
+import traverse from "@babel/traverse";
 
 import { styled } from "@/stitches";
 import { CodeBlock } from "../components/CodeBlock";
@@ -106,13 +107,51 @@ const Wrapper = styled("div", {
   paddingLeft: "$4",
 });
 
+function getLocations(tree, activeNode) {
+  const locs = [];
+
+  try {
+    traverse(tree, {
+      [activeNode]: (path) => {
+        locs.push(path.node.loc);
+      },
+    });
+  } catch {}
+
+  return locs;
+}
+
 export default function Page() {
   const [output, setOutput] = React.useState("");
   const [activeNode, setActiveNode] = React.useState<string | undefined>();
   const editorRef = React.useRef<any>();
   const inputEditorRef = React.useRef<any>();
+  const monacoRef = React.useRef<any>();
+  const decorationRefs = React.useRef<string[]>([]);
 
-  function handleMount(editor: any, monaco: Monaco) {
+  React.useEffect(() => {
+    if (activeNode) {
+      const locs = getLocations(tree, activeNode);
+
+      const newDecorations = inputEditorRef.current.deltaDecorations(
+        decorationRefs.current,
+        locs.map((loc) => ({
+          range: new monacoRef.current.Range(
+            loc.start.line,
+            loc.start.column + 1,
+            loc.end.line,
+            loc.end.column + 1
+          ),
+          options: {
+            inlineClassName: "decorated",
+          },
+        }))
+      );
+      decorationRefs.current = newDecorations;
+    }
+  }, [activeNode]);
+
+  function handleMount(editor: any) {
     editorRef.current = editor;
     editor.onKeyDown(({ code, metaKey }) => {
       if (metaKey && code === "Enter") {
@@ -131,7 +170,6 @@ export default function Page() {
 
   function exec() {
     setOutput("");
-    console.log(editorRef.current);
     const code = editorRef.current.getValue();
     const input = inputEditorRef.current.getValue();
     const out = transform(input, code);
@@ -149,7 +187,10 @@ export default function Page() {
       <CodeOutput>
         <CodeEditor
           defaultValue={input}
-          onMount={(editor) => (inputEditorRef.current = editor)}
+          onMount={(editor, monaco) => {
+            inputEditorRef.current = editor;
+            monacoRef.current = monaco;
+          }}
         />
         <OutputCode>{output}</OutputCode>
         <Arrow>

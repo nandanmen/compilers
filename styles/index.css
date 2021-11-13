@@ -60,3 +60,7 @@
   src: url("/fonts/RecoletaSemiBold/font.woff2") format("woff2"),
     url("/fonts/RecoletaSemiBold/font.woff") format("woff");
 }
+
+.decorated {
+  background: var(--colors-mint6);
+}
