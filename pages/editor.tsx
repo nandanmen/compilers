@@ -2,6 +2,7 @@ import React from "react";
 import Editor, { Monaco } from "@monaco-editor/react";
 import { HiChevronDown } from "react-icons/hi";
 import { FaPlay } from "react-icons/fa";
+import { parse } from "@babel/parser";
 
 import { styled } from "@/stitches";
 import { CodeBlock } from "../components/CodeBlock";
@@ -18,6 +19,9 @@ export default () => {
         if (path.node.kind === 'var') {
           // path.node.kind = 'let'
         }
+      },
+      Identifier(path) {
+
       }
     }
   }
@@ -33,8 +37,78 @@ function sum(a, b) {
 }
 `;
 
+const tree = parse(input);
+
+function getNodeAtPosition(model, position) {
+  const text = model.getValueInRange({
+    startColumn: 1,
+    startLineNumber: 1,
+    endColumn: position.column,
+    endLineNumber: position.lineNumber,
+  });
+
+  const [, nodes] = text.split("visitor: {") as string[];
+  if (nodes) {
+    const matches = nodes.match(/([A-Z][a-z0-9]+)+/g);
+    return matches?.reverse()[0];
+  }
+}
+
+function getChildNodes(node) {
+  return Object.values(node).filter((childProp: any) => {
+    if (Array.isArray(childProp)) {
+      const [first] = childProp;
+      return first && Boolean(first.type);
+    }
+    return childProp && Boolean(childProp.type);
+  });
+}
+
+function Tree({ tree, activeNode }) {
+  if (Array.isArray(tree)) {
+    return (
+      <>
+        {tree.map((node) => (
+          <Tree tree={node} activeNode={activeNode} />
+        ))}
+      </>
+    );
+  }
+
+  const childNodes = getChildNodes(tree);
+  return (
+    <div>
+      <TypeLabel active={activeNode === tree.type}>
+        <code>{tree.type}</code>
+      </TypeLabel>
+      <Wrapper>
+        {childNodes.map((node) => (
+          <Tree tree={node} activeNode={activeNode} />
+        ))}
+      </Wrapper>
+    </div>
+  );
+}
+
+const TypeLabel = styled("p", {
+  width: "fit-content",
+
+  variants: {
+    active: {
+      true: {
+        background: "$mint8",
+      },
+    },
+  },
+});
+
+const Wrapper = styled("div", {
+  paddingLeft: "$4",
+});
+
 export default function Page() {
   const [output, setOutput] = React.useState("");
+  const [activeNode, setActiveNode] = React.useState<string | undefined>();
   const editorRef = React.useRef<any>();
   const inputEditorRef = React.useRef<any>();
 
@@ -44,6 +118,14 @@ export default function Page() {
       if (metaKey && code === "Enter") {
         exec();
       }
+    });
+    editor.onDidChangeCursorPosition((args) => {
+      const { position } = args;
+
+      const model = editorRef.current.getModel();
+      const node = getNodeAtPosition(model, position);
+
+      setActiveNode(node);
     });
   }
 
@@ -58,58 +140,16 @@ export default function Page() {
 
   return (
     <Main>
-      <Article as="article">
-        <Title>Your First Babel Plugin</Title>
-        <p>
-          I want to start off with the Hello, World of Babel plugins: a small
-          plugin that converts all variables declared with `var` to variables
-          declared with `let`.
-        </p>
-        <p>
-          I've shown the complete plugin code in the middle column — it's only
-          ten lines of code! Don't worry if none of the code makes sense — we'll
-          get to what the code does and how it works in due time.
-        </p>
-        <p>
-          For now, uncomment the code on line 10, press the play button (or
-          press enter), and watch the plugin work its magic!
-        </p>
-      </Article>
       <Column>
-        <Editor
-          defaultLanguage="javascript"
-          defaultValue={code}
-          theme="myCustomTheme"
-          beforeMount={prepareMonaco}
-          onMount={handleMount}
-          options={{
-            fontFamily: "Input Mono",
-            fontSize: "13px",
-            minimap: {
-              enabled: false,
-            },
-            tabWidth: 2,
-            scrollBeyondLastLine: false,
-          }}
-        />
+        <CodeEditor defaultValue={code} onMount={handleMount} />
+      </Column>
+      <Column>
+        <Tree tree={tree.program} activeNode={activeNode} />
       </Column>
       <CodeOutput>
-        <Editor
-          defaultLanguage="javascript"
+        <CodeEditor
           defaultValue={input}
-          height="50vh"
-          theme="myCustomTheme"
-          beforeMount={prepareMonaco}
           onMount={(editor) => (inputEditorRef.current = editor)}
-          options={{
-            fontFamily: "Input Mono",
-            fontSize: "13px",
-            minimap: {
-              enabled: false,
-            },
-            tabWidth: 2,
-            scrollBeyondLastLine: false,
-          }}
         />
         <OutputCode>{output}</OutputCode>
         <Arrow>
@@ -120,6 +160,28 @@ export default function Page() {
         </Play>
       </CodeOutput>
     </Main>
+  );
+}
+
+function CodeEditor({ defaultValue, onMount }) {
+  return (
+    <Editor
+      defaultLanguage="javascript"
+      defaultValue={defaultValue}
+      height="50vh"
+      theme="myCustomTheme"
+      beforeMount={prepareMonaco}
+      onMount={onMount}
+      options={{
+        fontFamily: "Input Mono",
+        fontSize: "13px",
+        minimap: {
+          enabled: false,
+        },
+        tabWidth: 2,
+        scrollBeyondLastLine: false,
+      }}
+    />
   );
 }
 
@@ -158,7 +220,7 @@ const Play = styled(Control, {
 
 const Main = styled("main", {
   display: "grid",
-  gridTemplateColumns: "65ch repeat(2, 1fr)",
+  gridTemplateColumns: "repeat(3, 1fr)",
   height: "calc(100vh - 10px)",
 });
 
@@ -169,6 +231,9 @@ const Title = styled("h1", {
 });
 
 const Column = styled("div", {
+  maxHeight: "100%",
+  overflowY: "auto",
+
   "&:not(:last-child)": {
     borderRight: "2px solid $mint4",
   },

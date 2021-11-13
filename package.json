@@ -9,7 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@babel/standalone": "^7.16.2",
+    "@babel/parser": "^7.16.3",
+    "@babel/standalone": "^7.16.3",
     "@monaco-editor/react": "^4.3.1",
     "@radix-ui/colors": "^0.1.7",
     "@radix-ui/react-slider": "^0.1.1",
