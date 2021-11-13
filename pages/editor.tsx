@@ -4,6 +4,7 @@ import { HiChevronDown } from "react-icons/hi";
 import { FaPlay } from "react-icons/fa";
 import { parse } from "@babel/parser";
 import traverse from "@babel/traverse";
+import { useDebounce } from "use-debounce";
 
 import { styled } from "@/stitches";
 import { CodeBlock } from "../components/CodeBlock";
@@ -29,7 +30,7 @@ export default () => {
 }
 `;
 
-const input = `
+const inputCode = `
 var a = 10
 
 function sum(a, b) {
@@ -37,8 +38,6 @@ function sum(a, b) {
   return result
 }
 `;
-
-const tree = parse(input);
 
 function getNodeAtPosition(model, position) {
   const text = model.getValueInRange({
@@ -129,6 +128,16 @@ export default function Page() {
   const monacoRef = React.useRef<any>();
   const decorationRefs = React.useRef<string[]>([]);
 
+  const [input, setInput] = React.useState(inputCode);
+  const [debouncedInput] = useDebounce(input, 500);
+  const [tree, setTree] = React.useState(() => parse(inputCode));
+
+  React.useEffect(() => {
+    try {
+      setTree(parse(debouncedInput));
+    } catch {}
+  }, [debouncedInput]);
+
   React.useEffect(() => {
     if (activeNode) {
       const locs = getLocations(tree, activeNode);
@@ -149,7 +158,7 @@ export default function Page() {
       );
       decorationRefs.current = newDecorations;
     }
-  }, [activeNode]);
+  }, [activeNode, tree]);
 
   function handleMount(editor: any) {
     editorRef.current = editor;
@@ -181,9 +190,9 @@ export default function Page() {
       <Column>
         <CodeEditor defaultValue={code} onMount={handleMount} />
       </Column>
-      <Column>
+      <TreeColumn>
         <Tree tree={tree.program} activeNode={activeNode} />
-      </Column>
+      </TreeColumn>
       <CodeOutput>
         <CodeEditor
           defaultValue={input}
@@ -191,6 +200,7 @@ export default function Page() {
             inputEditorRef.current = editor;
             monacoRef.current = monaco;
           }}
+          onChange={setInput}
         />
         <OutputCode>{output}</OutputCode>
         <Arrow>
@@ -204,15 +214,13 @@ export default function Page() {
   );
 }
 
-function CodeEditor({ defaultValue, onMount }) {
+function CodeEditor(props) {
   return (
     <Editor
       defaultLanguage="javascript"
-      defaultValue={defaultValue}
       height="50vh"
       theme="myCustomTheme"
       beforeMount={prepareMonaco}
-      onMount={onMount}
       options={{
         fontFamily: "Input Mono",
         fontSize: "13px",
@@ -222,6 +230,7 @@ function CodeEditor({ defaultValue, onMount }) {
         tabWidth: 2,
         scrollBeyondLastLine: false,
       }}
+      {...props}
     />
   );
 }
@@ -265,12 +274,6 @@ const Main = styled("main", {
   height: "calc(100vh - 10px)",
 });
 
-const Title = styled("h1", {
-  fontSize: "2.5rem",
-  color: "$mint10",
-  fontFamily: "$serif",
-});
-
 const Column = styled("div", {
   maxHeight: "100%",
   overflowY: "auto",
@@ -280,6 +283,10 @@ const Column = styled("div", {
   },
 });
 
+const TreeColumn = styled(Column, {
+  padding: "$16",
+});
+
 const CodeOutput = styled(Column, {
   display: "grid",
   gridTemplateRows: "repeat(2, 1fr)",
@@ -287,24 +294,6 @@ const CodeOutput = styled(Column, {
 
   "> :first-child": {
     borderBottom: "2px solid $mint4",
-  },
-});
-
-const Article = styled(Column, {
-  padding: "$16",
-  lineHeight: 1.7,
-  color: "$mint12",
-
-  "> *": {
-    gridColumn: 3,
-  },
-
-  "> :not(:last-child)": {
-    marginBottom: "1em",
-  },
-
-  "> h2": {
-    marginTop: "$16",
   },
 });
 
