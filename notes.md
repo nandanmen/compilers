@@ -25,3 +25,15 @@
 - Highlight parts of the input editor when there is an active node
   - Got basic highlighting working
   - How to remove old decorations?
+    - Keep the current decorations in a ref
+
+## Scope for Twitter MVP
+
+- Highlight AST nodes when the cursor is in that part of the visitor ✅
+- Highlight lines in input code when an AST node is highlighted ✅
+- Update output code as input code is changed ✅
+- Add loading indicator for debounced values (i.e. AST and output code)
+- Make the AST more aesthetic
+  - Copy over the AST component from the debugger post
+- Some kind of static analysis???
+- Visualize a path? (path over node?)

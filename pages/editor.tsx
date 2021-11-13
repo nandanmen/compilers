@@ -1,5 +1,5 @@
 import React from "react";
-import Editor, { Monaco } from "@monaco-editor/react";
+import Editor, { EditorProps, Monaco } from "@monaco-editor/react";
 import { HiChevronDown } from "react-icons/hi";
 import { FaPlay } from "react-icons/fa";
 import { parse } from "@babel/parser";
@@ -106,7 +106,7 @@ const Wrapper = styled("div", {
   paddingLeft: "$4",
 });
 
-function getLocations(tree, activeNode) {
+function getLocations(tree, activeNode: string) {
   const locs = [];
 
   try {
@@ -136,6 +136,10 @@ export default function Page() {
     try {
       setTree(parse(debouncedInput));
     } catch {}
+  }, [debouncedInput]);
+
+  React.useEffect(() => {
+    exec(debouncedInput);
   }, [debouncedInput]);
 
   React.useEffect(() => {
@@ -177,12 +181,17 @@ export default function Page() {
     });
   }
 
-  function exec() {
-    setOutput("");
-    const code = editorRef.current.getValue();
-    const input = inputEditorRef.current.getValue();
-    const out = transform(input, code);
-    setOutput(out);
+  function exec(inputCode = input) {
+    const code = editorRef.current?.getValue();
+    if (code) {
+      setOutput("");
+      try {
+        const out = transform(inputCode, code);
+        setOutput(out);
+      } catch (e) {
+        setOutput((e as Error).message);
+      }
+    }
   }
 
   return (
@@ -200,13 +209,13 @@ export default function Page() {
             inputEditorRef.current = editor;
             monacoRef.current = monaco;
           }}
-          onChange={setInput}
+          onChange={(newCode) => setInput(newCode ?? "")}
         />
         <OutputCode>{output}</OutputCode>
         <Arrow>
           <HiChevronDown size="2rem" />
         </Arrow>
-        <Play onClick={exec}>
+        <Play onClick={() => exec()}>
           <FaPlay size="1rem" />
         </Play>
       </CodeOutput>
@@ -214,7 +223,7 @@ export default function Page() {
   );
 }
 
-function CodeEditor(props) {
+function CodeEditor(props: EditorProps) {
   return (
     <Editor
       defaultLanguage="javascript"
@@ -276,7 +285,6 @@ const Main = styled("main", {
 
 const Column = styled("div", {
   maxHeight: "100%",
-  overflowY: "auto",
 
   "&:not(:last-child)": {
     borderRight: "2px solid $mint4",
