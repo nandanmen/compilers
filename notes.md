@@ -27,12 +27,16 @@
   - How to remove old decorations?
     - Keep the current decorations in a ref
 
-## Scope for Twitter MVP
+## MVP Scope
 
 - Highlight AST nodes when the cursor is in that part of the visitor ✅
 - Highlight lines in input code when an AST node is highlighted ✅
 - Update output code as input code is changed ✅
+- Show diff in output code ✅
+  - Make this a toggle so the diff editor isn't always displayed
+- Update output code as plugin code is changed
 - Add loading indicator for debounced values (i.e. AST and output code)
+- Highlight AST node when cursor updates in input code
 - Make the AST more aesthetic
   - Copy over the AST component from the debugger post
 - Some kind of static analysis???

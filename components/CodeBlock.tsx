@@ -34,7 +34,7 @@ const style = {
     overflowX: "auto",
     background: "#05201e",
     color: "#e7fcf7",
-    fontSize: "13px",
+    fontSize: "14px",
     lineHeight: 1.4,
   },
   "hljs-emphasis": {

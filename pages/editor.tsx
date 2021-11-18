@@ -1,5 +1,5 @@
 import React from "react";
-import Editor, { EditorProps, Monaco } from "@monaco-editor/react";
+import Editor, { DiffEditor, EditorProps, Monaco } from "@monaco-editor/react";
 import { HiChevronDown } from "react-icons/hi";
 import { FaPlay } from "react-icons/fa";
 import { parse } from "@babel/parser";
@@ -7,7 +7,6 @@ import traverse from "@babel/traverse";
 import { useDebounce } from "use-debounce";
 
 import { styled } from "@/stitches";
-import { CodeBlock } from "../components/CodeBlock";
 import { transform } from "../lib/useBabelPlugin";
 
 const code = `
@@ -19,25 +18,20 @@ export default () => {
     visitor: {
       VariableDeclaration(path) {
         if (path.node.kind === 'var') {
-          // path.node.kind = 'let'
+          path.node.kind = 'let'
         }
       },
-      Identifier(path) {
-
-      }
     }
   }
 }
 `;
 
-const inputCode = `
-var a = 10
+const inputCode = `var a = 10;
 
 function sum(a, b) {
-  var result = a + b
-  return result
-}
-`;
+  var result = a + b;
+  return result;
+}`;
 
 function getNodeAtPosition(model, position) {
   const text = model.getValueInRange({
@@ -54,8 +48,11 @@ function getNodeAtPosition(model, position) {
   }
 }
 
-function getChildNodes(node) {
-  return Object.values(node).filter((childProp: any) => {
+function getChildNodes(node, showAll = true) {
+  return Object.entries(node).filter(([, childProp]: any) => {
+    if (showAll) {
+      return true;
+    }
     if (Array.isArray(childProp)) {
       const [first] = childProp;
       return first && Boolean(first.type);
@@ -64,26 +61,39 @@ function getChildNodes(node) {
   });
 }
 
-function Tree({ tree, activeNode }) {
-  if (Array.isArray(tree)) {
+function Tree({ tree, activeNode, label }) {
+  return (
+    <div>
+      <p>{label}</p>
+      <Node node={tree} activeNode={activeNode} />
+    </div>
+  );
+}
+
+function Node({ node, activeNode }) {
+  if (Array.isArray(node)) {
     return (
       <>
-        {tree.map((node) => (
-          <Tree tree={node} activeNode={activeNode} />
+        {node.map((child, index) => (
+          <Tree label={index} tree={child} activeNode={activeNode} />
         ))}
       </>
     );
   }
 
-  const childNodes = getChildNodes(tree);
+  if (!node || !node.type) {
+    return <TypeLabel>{JSON.stringify(node)}</TypeLabel>;
+  }
+
+  const childNodes = getChildNodes(node);
   return (
     <div>
-      <TypeLabel active={activeNode === tree.type}>
-        <code>{tree.type}</code>
+      <TypeLabel active={activeNode === node.type}>
+        <code>{node.type}</code>
       </TypeLabel>
       <Wrapper>
-        {childNodes.map((node) => (
-          <Tree tree={node} activeNode={activeNode} />
+        {childNodes.map(([label, child]) => (
+          <Tree label={label} tree={child} activeNode={activeNode} />
         ))}
       </Wrapper>
     </div>
@@ -166,8 +176,10 @@ export default function Page() {
 
   function handleMount(editor: any) {
     editorRef.current = editor;
-    editor.onKeyDown(({ code, metaKey }) => {
-      if (metaKey && code === "Enter") {
+    editor.onKeyDown((evt) => {
+      const { code, shiftKey } = evt;
+      if (shiftKey && code === "Enter") {
+        evt.preventDefault();
         exec();
       }
     });
@@ -197,10 +209,10 @@ export default function Page() {
   return (
     <Main>
       <Column>
-        <CodeEditor defaultValue={code} onMount={handleMount} />
+        <CodeEditor defaultValue={code} onMount={handleMount} height="100vh" />
       </Column>
       <TreeColumn>
-        <Tree tree={tree.program} activeNode={activeNode} />
+        <Tree label="" tree={tree.program} activeNode={activeNode} />
       </TreeColumn>
       <CodeOutput>
         <CodeEditor
@@ -211,7 +223,27 @@ export default function Page() {
           }}
           onChange={(newCode) => setInput(newCode ?? "")}
         />
-        <OutputCode>{output}</OutputCode>
+        {output && (
+          <DiffEditor
+            original={input}
+            modified={output}
+            language="javascript"
+            height="50vh"
+            theme="myCustomTheme"
+            beforeMount={prepareMonaco}
+            options={{
+              fontFamily: "Input Mono",
+              fontSize: "14px",
+              minimap: {
+                enabled: false,
+              },
+              tabWidth: 2,
+              scrollBeyondLastLine: false,
+              renderSideBySide: false,
+              readOnly: true,
+            }}
+          />
+        )}
         <Arrow>
           <HiChevronDown size="2rem" />
         </Arrow>
@@ -232,7 +264,7 @@ function CodeEditor(props: EditorProps) {
       beforeMount={prepareMonaco}
       options={{
         fontFamily: "Input Mono",
-        fontSize: "13px",
+        fontSize: "14px",
         minimap: {
           enabled: false,
         },
@@ -243,10 +275,6 @@ function CodeEditor(props: EditorProps) {
     />
   );
 }
-
-const OutputCode = styled(CodeBlock, {
-  padding: "$16",
-});
 
 const Control = styled("div", {
   padding: "$2",
@@ -292,7 +320,8 @@ const Column = styled("div", {
 });
 
 const TreeColumn = styled(Column, {
-  padding: "$16",
+  padding: "$10",
+  overflowY: "auto",
 });
 
 const CodeOutput = styled(Column, {
