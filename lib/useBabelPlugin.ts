@@ -38,6 +38,8 @@ export function usePluginString(code: string, plugin: string) {
 export function transform(code: string, plugin: string) {
   const pluginObj = Babel.transform(plugin, {
     plugins: [exportDefaultToReturn],
+    presets: ["typescript"],
+    filename: "plugin.ts",
   });
   const result = Babel.transform(code, { plugins: [execute(pluginObj.code)] });
   return result.code;

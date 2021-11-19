@@ -32,10 +32,10 @@ const style = {
   hljs: {
     display: "block",
     overflowX: "auto",
-    background: "#05201e",
     color: "#e7fcf7",
     fontSize: "14px",
     lineHeight: 1.4,
+    padding: "16px",
   },
   "hljs-emphasis": {
     fontStyle: "italic",

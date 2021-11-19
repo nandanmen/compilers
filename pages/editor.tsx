@@ -8,12 +8,14 @@ import { useDebounce } from "use-debounce";
 
 import { styled } from "@/stitches";
 import { transform } from "../lib/useBabelPlugin";
+import { types } from "../lib/visitorTypes";
+import { AstTree, AstTreeVariant } from "../components/AstTree";
 
 const code = `
 /**
  * A babel plugin to convert 'var' declarations to 'let'.
  */
-export default () => {
+export default (): BabelPlugin => {
   return {
     visitor: {
       VariableDeclaration(path) {
@@ -174,8 +176,13 @@ export default function Page() {
     }
   }, [activeNode, tree]);
 
-  function handleMount(editor: any) {
+  function handleMount(editor: any, monaco: Monaco) {
     editorRef.current = editor;
+
+    const libUri = "ts:filename/types.d.ts";
+    monaco.languages.typescript.javascriptDefaults.addExtraLib(types, libUri);
+    monaco.editor.createModel(types, "typescript", monaco.Uri.parse(libUri));
+
     editor.onKeyDown((evt) => {
       const { code, shiftKey } = evt;
       if (shiftKey && code === "Enter") {
@@ -212,10 +219,18 @@ export default function Page() {
         <CodeEditor defaultValue={code} onMount={handleMount} height="100vh" />
       </Column>
       <TreeColumn>
-        <Tree label="" tree={tree.program} activeNode={activeNode} />
+        <AstTree
+          tree={tree.program}
+          code={inputCode}
+          activeNodeType={activeNode}
+          variant={AstTreeVariant.Node}
+          depth={3}
+          whitelist={new Set(["name", "value", "kind", "operator"])}
+        />
       </TreeColumn>
       <CodeOutput>
         <CodeEditor
+          defaultLanguage="javascript"
           defaultValue={input}
           onMount={(editor, monaco) => {
             inputEditorRef.current = editor;
@@ -258,7 +273,7 @@ export default function Page() {
 function CodeEditor(props: EditorProps) {
   return (
     <Editor
-      defaultLanguage="javascript"
+      defaultLanguage="typescript"
       height="50vh"
       theme="myCustomTheme"
       beforeMount={prepareMonaco}

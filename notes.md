@@ -34,6 +34,7 @@
 - Update output code as input code is changed ✅
 - Show diff in output code ✅
   - Make this a toggle so the diff editor isn't always displayed
+- Right click a node type to add the type to the visitor
 - Update output code as plugin code is changed
 - Add loading indicator for debounced values (i.e. AST and output code)
 - Highlight AST node when cursor updates in input code

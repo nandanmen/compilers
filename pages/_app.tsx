@@ -22,6 +22,15 @@ const globalStyles = globalCss({
     fontFamily: "$mono",
     padding: "$1",
   },
+  button: {
+    background: "none",
+    color: "inherit",
+    border: "none",
+    padding: 0,
+    font: "inherit",
+    cursor: "pointer",
+    outline: "inherit",
+  },
 });
 
 function MyApp({ Component, pageProps }: AppProps) {
