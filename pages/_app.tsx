@@ -21,7 +21,15 @@ const globalStyles = globalCss({
   code: {
     fontFamily: "$mono",
     padding: "$1",
-    background: "$mint4",
+  },
+  button: {
+    background: "none",
+    color: "inherit",
+    border: "none",
+    padding: 0,
+    font: "inherit",
+    cursor: "pointer",
+    outline: "inherit",
   },
 });
 
