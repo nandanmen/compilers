@@ -265,6 +265,7 @@ function Node(props) {
 
 const NodeWrapper = styled(motion.li, {
   position: "relative",
+  marginBottom: "$2",
 
   "> ul > li:last-child:before": {
     content: "",
@@ -295,7 +296,6 @@ function NodeLabel(props) {
 const NodeLabelWrapper = styled(motion.div, {
   position: "relative",
   background: "$mint2",
-  marginBottom: "$2",
 
   variants: {
     showLine: {
